@@ -44,6 +44,7 @@ let wiresToCut = [];
 /* -------------Functions------------*/
 let gameInit = function() {
     let domWires = document.querySelectorAll("img");
+    console.log(domWires);
     let domResetBtn = document.querySelector(".reset");
     let domTimer = document.querySelector(".countdown");
 
