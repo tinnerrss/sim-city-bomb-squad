@@ -47,23 +47,32 @@ let gameOver = true;
 /* -------------Functions------------*/
 let gameInit = function() {
     let domWires = document.querySelectorAll("img");
-        console.log(domWires);
+    // console.log(domWires);
     let domResetBtn = document.querySelector(".reset");
     let domTimer = document.querySelector(".countdown");
-
+    document.getElementById("success").pause();
+    document.getElementById("success").currentTime = 0;
+    
+    //tell js game is on
+    gameOver = false;
+    //set wiresToCut = []
     wiresToCut = [];
-     //reset wire imgs
+     //reset timer
      remainingTime = STARTING_TIME;
+     //reset wire imgs
      for (let i = 0; i < 5; i++) {
          domWires[i].src = `img/uncut-${domWires[i].id}-wire.png`;
+         //reset corrosponding js wire to be uncut
+         wires[domWires[i].id].cut = false;
      }
-     //set wiresToCut = []
      //disable button
-     //reset background
      domResetBtn.disabled = true;
+     //reset background
      document.querySelector("body").classList.remove("flat-city");
      document.querySelector("body").classList.add("happy-city");
-     
+     //make countdown RED
+     domTimer.classList.remove("countdown-saved");
+     domTimer.classList.add("countdown-panic");
      //reset timer
      remainingTime = STARTING_TIME;
     //set wires to be cut (includes pushing to wiresToCut)
@@ -74,6 +83,8 @@ let gameInit = function() {
         }
     }
     console.log(wiresToCut);
+    //play siren
+    document.getElementById("siren").play();
     //start countdown
     countdown = setInterval(updateClock, 100);
     //play siren
@@ -85,17 +96,25 @@ let endGame = function(win) {
     clearTimeout(delay);
     gameOver = true;
     document.querySelector(".reset").disabled = false;
+    document.getElementById("siren").pause();
 
     if (win) {
-        //todo saviour stuff
         console.log("horray!");
+        //make timer green
+        document.querySelector(".countdown").classList.remove("countdown-panic");
+        document.querySelector(".countdown").classList.add("countdown-saved");
+        //talk sounds
+        document.getElementById("yay").play;
+        document.getElementById("success").play;
     } else {
         console.log("KABOOM!");
         //change  background
         document.body.classList.remove("happy-city");
         document.body.classList.add("flat-city");
+        document.getElementById("explode").play();
     }
 }
+
 let updateClock = function() {
     //todo countdown in miliseconds 
     remainingTime--;
@@ -105,39 +124,38 @@ let updateClock = function() {
     } 
     document.querySelector(".countdown").textContent = `00:00:${remainingTime < 10 ? "0" + remainingTime : remainingTime}`;
 }
+
 let wireClickHandler = function(e) {
     //check if wire has been cut
     if (!wires[e.target.id].cut && !gameOver) {
         //tell javascript we've cut the wire
         wires[e.target.id].cut = true;
-    //change img
-    e.target.src = wires[e.target.id].cutImg;
-    //check if it's in wire to cut
-    let wireIndex = wiresToCut.indexOf(e.target.id); 
-    if (wireIndex > -1) {
-        console.log("good so far")
-        wiresToCut.splice(wireIndex, 1);
-    
-    // run checkWin()  
-    //check if wiresToCut.length === 0
-   if (wiresToCut.length === 0) {
-       endGame(true);
-    } else {
-        delay = setTimeout(function() {
-            console.log("Yikes, you've still got 750 miliseconds");
-            endGame(false);
-        }, 750);
-    }
-    // play buzz    
-    // disable future clicks
+        //change img
+        e.target.src = wires[e.target.id].cutImg;
+        // play buzz    
+        document.getElementById("buzz").play();
+        //check if it's in wire to cut
+        let wireIndex = wiresToCut.indexOf(e.target.id); 
+        if (wireIndex > -1) {
+            console.log("good so far")
+            wiresToCut.splice(wireIndex, 1);
+        if (wiresToCut.length === 0) {
+            endGame(true);
+        } else {
+            delay = setTimeout(function() {
+                console.log("Yikes, you've still got 750 miliseconds");
+                endGame(false);
+            }, 750);
+        }
+        // disable future clicks
+        }
     }
 };
 
 
 document.addEventListener("DOMContentLoaded", function() {
-// DOM references
-// console.log(document);
-gameInit();
     document.querySelector(".wires").addEventListener("click", wireClickHandler);
-}
-)}
+    document.querySelector(".reset").addEventListener("click", gameInit);
+    
+    gameInit();
+})
